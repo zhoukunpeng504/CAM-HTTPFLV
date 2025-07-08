@@ -1,0 +1,13 @@
+gevent
+requests
+flask
+Pillow
+opencv-python-headless
+setproctitle
+psutil
+numpy
+cloudpickle
+redis
+Flask-Cors
+flask-httpauth
+av==12.0.0

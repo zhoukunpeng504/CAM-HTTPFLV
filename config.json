@@ -1,0 +1,32 @@
+{
+  "FFMPEG_OPTIONS": {
+    "RTSP-TCP": {
+      "format": "RTSP",
+      "container_options": {
+        "buffer_size": "1024000",
+        "rtsp_transport": "tcp",
+        "stimeout": "20000000",
+        "max_delay": "3000000",
+        "probesize": "100000",
+        "analyzeduration": "150000"
+      }
+    },
+    "RTSP-UDP": {
+      "format": "RTSP",
+      "container_options": {
+        "buffer_size": "1024000",
+        "stimeout": "20000000",
+        "max_delay": "3000000",
+        "probesize": "100000",
+        "analyzeduration": "150000"
+      }
+    },
+    "RTMP": {
+      "format": "RTMP",
+      "container_options": {
+        "probesize": "150000",
+        "analyzeduration": "200000"
+      }
+    }
+  }
+}
