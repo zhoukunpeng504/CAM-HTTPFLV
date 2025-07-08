@@ -2,7 +2,7 @@
 FROM python:3.12.11
 MAINTAINER zhoukunpeng<zhoukunpeng504@163.com>
 RUN apt-get update
-RUN apt install -y vim htop gcc g++ pkg-config lrzsz
+RUN apt install -y vim htop gcc g++ pkg-config lrzsz redis nload
 RUN mkdir -p /data/logs
 COPY .  /data/code
 WORKDIR /data/code
@@ -17,4 +17,4 @@ ENV PYTHONUNBUFFERED 1
 EXPOSE 8005
 EXPOSE 8006
 WORKDIR /data/code
-ENTRYPOINT ["python3", "server.py"]
+ENTRYPOINT ["python3", "start.py"]
