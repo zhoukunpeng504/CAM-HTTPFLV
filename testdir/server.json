@@ -1,0 +1,10 @@
+{
+  "verbose": true,
+  "host": "192.168.1.166",
+  "port": 8000,
+  "streams": "lldash.json",
+  "sslKeyFile": "",
+  "sslCertFile": "",
+  "timeDisplacement": 0,
+  "waitForAbsentSegment": true
+}

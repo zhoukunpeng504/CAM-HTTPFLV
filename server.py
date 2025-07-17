@@ -24,6 +24,7 @@ import gzip
 import av
 import cv2
 from gevent.queue import Queue
+import traceback
 
 
 app = Flask(__name__, #template_folder=os.path.join(BASE_PATH, 'templates'),
@@ -246,7 +247,8 @@ def handle(sock, address):
         _a,_b,_c = base_info.split()
         if _a == 'GET':
             path = _b
-            real_path, query_info = path.split("?")[1]
+            print_to_logger("path", path)
+            real_path, query_info = path.split("?", 1) #[1]
             assert real_path in ("/",), Exception("路径不合法！")
             query_dict = dict(parse.parse_qsl(query_info))
             assert "cam_url" in query_dict and query_dict['cam_url'],\
@@ -257,7 +259,7 @@ def handle(sock, address):
             assert 'cam_type' in query_dict and query_dict['cam_url'],  Exception('无法找到cam_type参数')
             cam_type = query_dict['cam_type']
             assert cam_type in ("rtsp-tcp", 'rtsp-udp', "rtmp"), Exception("cam_type不合法")
-            allow_h265 = query_dict.get('allow_h265', '').strip()
+            allow_h265 = query_dict.get('allow_h265', 'true').strip()
             if allow_h265 in ('true', '1', 'True'):
                 allow_h265 = True
             else:
@@ -278,6 +280,7 @@ def handle(sock, address):
         print_to_logger(request_data)
     except Exception as e:
         print_to_logger("ERROR!!", str(e))
+        print_to_logger(traceback.format_exc())
         sock.send(b"HTTP/1.1 404 Not Found\r\n\r\nNot Found")
     else:
         if not is_websocket:

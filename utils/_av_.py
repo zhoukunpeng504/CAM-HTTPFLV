@@ -2,6 +2,7 @@
 __author__ = "zkp"
 # create by zkp on 2022/9/14
 import os
+from av import bitstream
 
 
 def av_function(cam_url, redis_url,
@@ -16,6 +17,8 @@ def av_function(cam_url, redis_url,
     import sys
     import redis, datetime, os, traceback, random, string
     import psutil
+    from av import bitstream
+    import fractions
     # import ctypes
     sys.path.append(os.path.abspath(os.path.dirname(__file__)))
     try:
@@ -77,10 +80,11 @@ def av_function(cam_url, redis_url,
     kwargs = config_json['FFMPEG_OPTIONS'].get(cam_type.upper(), {})
     print_to_logger(cam_url, cam_type, kwargs)
     counter = 0
+    mp4toannexb_filter = None
     while 1:
         try:
             print_to_logger("av open", cam_url)
-            #counter += 1
+            # counter += 1
             video = av.open(cam_url, 'r',
                             # format,
                             # options=dicOption,
@@ -91,13 +95,18 @@ def av_function(cam_url, redis_url,
             print_to_logger("av open ...")
             # packet_num = 0
             stream = video.streams.video[0]
+            if cam_type == 'rtmp':
+                mp4toannexb_filter = bitstream.BitStreamFilterContext("h264_mp4toannexb",
+                                                                      in_stream=stream)
             try:
                 audio = video.streams.audio[0]
                 audio_code_name = audio.codec_context.name
             except:
                 audio = None
                 audio_code_name = ''
-            print_to_logger("video # audio", stream, audio)
+            print_to_logger("video # audio", stream,
+                            stream.time_base ,stream.codec_context.framerate,
+                            audio)
             # print(stream.codec_context)
             # print(dir(stream.codec_context), stream.codec_context.name)
             code_name = stream.codec_context.name
@@ -107,27 +116,39 @@ def av_function(cam_url, redis_url,
                              )
             need_encode = False
             if code_name in ('h265', 'hevc') and enable_auto_encode:
-                _out_stream = output.add_stream(codec_name='h264', rate=stream.codec_context.framerate)
+                _out_stream = output.add_stream(codec_name='h264',
+                                                rate=stream.codec_context.framerate
+                                                )
                 _out_stream.width = 1920
                 _out_stream.height = 1080
                 need_encode = True
             else:
-                _out_stream = output.add_stream(codec_name=code_name, rate=stream.codec_context.framerate)
+                _out_stream = output.add_stream(codec_name=code_name,
+                                                rate=stream.codec_context.framerate
+                                                )
                 _out_stream.width = stream.width
                 _out_stream.height = stream.height
+
+            _out_stream.time_base = fractions.Fraction(1, 1000) #'1/1000'
+            # time_base对齐
 
             _out_stream.codec_context.options = {
                 # 'tune': 'zerolatency',
                 'preset': 'ultrafast'
             }
             if audio:
-                print("audio time base", audio.time_base,audio.codec_context, audio.codec_context.rate)
+                print("audio time base", audio.time_base,audio.codec_context, audio.codec_context.rate,
+                      audio.codec_context.layout.name)
                 # 源视频中含有音频流
-                _out_stream_audio = output.add_stream(codec_name='pcm_alaw',
-                                                      rate=8000, #audio.codec_context.rate,
+                _out_stream_audio = output.add_stream(codec_name='aac',
+                                                      rate=audio.codec_context.rate,#8000, #audio.codec_context.rate,
                                                       layout=audio.codec_context.layout.name,
                                                       )  # layout和输入保持一致
-                _out_stream_audio.time_base = '1/8000' #str(audio.time_base) #'1/8000'
+
+                # _out_stream_audio.time_base = f"1/{audio.codec_context.rate}"
+                # '1/8000' #str(audio.time_base) #'1/8000'
+                # f'1/{str(audio.time_base).split("/")[-1]}'
+                _out_stream_audio.time_base = fractions.Fraction(1, audio.time_base.denominator)
             else:
                 _out_stream_audio = None
 
@@ -135,10 +156,18 @@ def av_function(cam_url, redis_url,
 
             for _p in video.demux():  # , **({"audio":0} if _out_stream_audio else {}
                 counter += 1
-                if _p.pts == None:
-                    _p.pts = 0
-                    _p.dts = 0
-                if _p.stream_index == 0:
+                if _p.pts == None or _p.pts==0 or _p.dts==0:
+                    _p.pts = 1
+                    _p.dts = 1
+
+                # if _p.pts and _p.dts and _p.pts > _p.dts:
+                #     _p.dts = _p.pts
+                print("[_p]", _p, _p.stream)
+
+                if 'video' in str(_p.stream.codec_context):
+                    # 处理RTMP格式的 packet包格式(AVCC)问题。 转化为annexb格式
+                    if cam_type == 'rtmp':
+                        _p = mp4toannexb_filter.filter(_p)[0]
                     # 视频帧
                     if not need_encode:
                         # 无需转码
@@ -149,12 +178,15 @@ def av_function(cam_url, redis_url,
                             # _packets = _out_stream.encode(frame)
                             # for _p in _packets:
                             # _p.time_base = '1/90000'
-                            # _p.dts = _time
-                            # _p.pts = _time
+                            print("[VIDEO]", _p, _p.time_base, _p.dts, _p.pts,_p.is_keyframe)
+                            #_time = int(_p.dts / 90)
+                            #_p.dts = _time
+                            #_p.pts = _time
                             # print(_p)
-                            # print(_p, _p.time_base, _p.dts, _p.pts)
-                            time_base = _p.time_base
-                            last_pts = _p.pts
+                            # print("[VIDEO]",_p, _p.time_base, _p.dts, _p.pts)
+                            #_p.time_base = _p.time_base / 90
+                            # last_pts = _p.pts
+                            _p.stream = _out_stream
                             output.mux(_p)
                         except (Exception, BaseException) as e:
                             print_to_logger("mux except:", str(e))
@@ -169,7 +201,7 @@ def av_function(cam_url, redis_url,
                                 # print(frame)
                                 _packets = _out_stream.encode(frame)
                                 for _p in _packets:
-                                    _p.time_base = '1/90000'
+                                    # _p.time_base = '1/1000'
                                     _p.dts = frame.pts
                                     _p.pts = frame.pts
                                     _p.stream = _out_stream
@@ -178,9 +210,11 @@ def av_function(cam_url, redis_url,
                             except (Exception, BaseException) as e:
                                 print_to_logger("decode and mux except:", str(e))
 
-                if _p.stream_index == 1 and _out_stream_audio:
+                # if _p.stream_index == 1 and _out_stream_audio:
+                elif 'audio' in str(_p.stream.codec_context) and _out_stream_audio:
                     # 音频帧
-                    if audio_code_name == 'pcm_alaw':
+                    print("[AUDIO]", _p, _p.time_base, _p.dts, _p.pts)
+                    if audio_code_name == 'aac' and str(audio.codec_context.rate) == '8000':
                         try:
                             # print(_p, _p.time_base, _p.dts, _p.pts)
                             _p.stream = _out_stream_audio
@@ -192,7 +226,7 @@ def av_function(cam_url, redis_url,
                         if _p_:
                             try:
                                 kks = _out_stream_audio.encode(_p_[0])
-                                print(_p_, kks)
+                                # print(_p_, kks)
                                 for kk in kks:
                                     kk.stream = _out_stream_audio
                                     output.mux(kk)

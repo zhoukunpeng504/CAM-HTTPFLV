@@ -7,7 +7,7 @@
         "rtsp_transport": "tcp",
         "stimeout": "20000000",
         "max_delay": "3000000",
-        "probesize": "100000",
+        "probesize": "120000",
         "analyzeduration": "150000"
       }
     },
@@ -17,15 +17,15 @@
         "buffer_size": "1024000",
         "stimeout": "20000000",
         "max_delay": "3000000",
-        "probesize": "100000",
+        "probesize": "120000",
         "analyzeduration": "150000"
       }
     },
     "RTMP": {
-      "format": "RTMP",
+      "format": "FLV",
       "container_options": {
-        "probesize": "150000",
-        "analyzeduration": "200000"
+        "probesize": "540000",
+        "analyzeduration": "250000"
       }
     }
   }

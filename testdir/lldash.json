@@ -1,0 +1,15 @@
+[
+  {
+    "name": "Another Stream",
+    "stream": "hik1",
+    "type": "GEN",
+    "qualities": {
+      "video": [
+        {
+          "targetWidth": "1280",
+          "targetBitrate": "720"
+        }
+      ]
+    }
+  }
+]
