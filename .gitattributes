@@ -1,2 +1,4 @@
+testdir/happytime-rtsp-server.zip filter=lfs diff=lfs merge=lfs -text
+testdir/happytime-rtmp-server.zip filter=lfs diff=lfs merge=lfs -text
 *.psd filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
