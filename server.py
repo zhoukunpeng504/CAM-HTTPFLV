@@ -258,6 +258,11 @@ def handle(sock, address):
                 cam_url = cam_url[:-4]
             assert 'cam_type' in query_dict and query_dict['cam_url'],  Exception('无法找到cam_type参数')
             cam_type = query_dict['cam_type']
+            if not cam_type:
+                if cam_url.startswith("rtsp"):
+                    cam_type = "rtsp-tcp"
+                if cam_type.startswith("rtmp"):
+                    cam_type = "rtmp"
             assert cam_type in ("rtsp-tcp", 'rtsp-udp', "rtmp"), Exception("cam_type不合法")
             allow_h265 = query_dict.get('allow_h265', 'true').strip()
             if allow_h265 in ('true', '1', 'True'):
