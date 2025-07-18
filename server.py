@@ -256,8 +256,8 @@ def handle(sock, address):
             cam_url = query_dict['cam_url']#.strip(".flv")
             if cam_url.endswith(".flv"):
                 cam_url = cam_url[:-4]
-            assert 'cam_type' in query_dict and query_dict['cam_url'],  Exception('无法找到cam_type参数')
-            cam_type = query_dict['cam_type']
+            #assert 'cam_type' in query_dict and query_dict['cam_url'],  Exception('无法找到cam_type参数')
+            cam_type = query_dict.get('cam_type', '')
             if not cam_type:
                 if cam_url.startswith("rtsp"):
                     cam_type = "rtsp-tcp"
