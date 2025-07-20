@@ -79,7 +79,7 @@ docker run -itd -p 8005:8005 -p 8006:8006 \
 
 ### Install from Source
 
-Ensure your Python version is >= 3.9.x.
+Ensure your Python version is >= 3.9.x. It is recommended to use a Linux system, such as Ubuntu.
 
 ```bash
 git clone git@github.com:zhoukunpeng504/CAM-HTTPFLV.git
