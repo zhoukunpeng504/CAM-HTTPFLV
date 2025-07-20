@@ -213,3 +213,4 @@ __marimo__/
 ./testdir/tes1.py
 
 testdir/tes1.py
+testdir/tes*.py
