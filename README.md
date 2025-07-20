@@ -9,7 +9,6 @@
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 
 <p align="left">
-<br>
         <a href="README_CN.md">中文</a> &nbsp ｜ &nbsp English &nbsp
 </p>
 
