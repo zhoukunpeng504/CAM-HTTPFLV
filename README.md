@@ -8,6 +8,11 @@
 ![Flask](https://img.shields.io/badge/Flask-000.svg?logo=flask&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 
+<p align="left">
+<br>
+        <a href="README_CN.md">中文</a> &nbsp ｜ &nbsp English &nbsp
+</p>
+
 CAM-HTTPFLV provides two core features:
 - Convert various RTSP and RTMP video streams to HTTP-FLV live streams (playable in modern browsers)
 - Capture snapshots from RTSP or RTMP streams and return them as JPG images

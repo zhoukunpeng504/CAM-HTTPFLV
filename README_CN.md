@@ -8,6 +8,10 @@
 ![Flask](https://img.shields.io/badge/Flask-000.svg?logo=flask&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 
+<p align="left">
+<br>
+         &nbsp 中文 &nbsp | &nbsp;<a href="README.md">English</a> &nbsp 
+</p>
 
 CAM-HTTPFLV 支持两大核心功能：
 - 把各种格式的RTSP、RTMP视频流转化为HTTPFLV格式的直播视频流(可支持在各种浏览器中访问)
