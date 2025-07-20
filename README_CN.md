@@ -183,7 +183,7 @@ cd happytime-rtmp-server
 ```bash
 ffplay -i 'http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mp4'
 ```
-<img src="imgs/img66.png" alt="image-20250718084834878" style="zoom:67%;" />
+<img src="imgs/img66.png" alt="image-20250718084834878" style="width:70%;" />
 
 2. 使用vlc播放
 在VLC菜单项中依次点击--File--Open Network
@@ -191,16 +191,23 @@ ffplay -i 'http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A
 ```bash
 http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mp4
 ```
-![img_3.png](imgs/img_3.png)
+
+<img src="imgs/img_3.png" alt="image-20250718084834878" style="width:70%;" />
+
 然后点击Open
-![img_4.png](imgs/img_4.png)
+
+
+<img src="imgs/img_4.png" alt="image-20250718084834878" style="width:70%;" />
+
 3.使用jessibuca播放
 打开如下链接：[jessibuda测试地址](http://jessibuca.monibuca.com/player.html)
 在网页中填入播放地址，并点击播放：
 ```bash
 http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mp4
 ```
-![img_5.png](imgs/img_5.png)
+
+<img src="imgs/img_5.png" alt="image-20250718084834878" style="width:70%;" />
+
 
 ## 视频源实时快照
 
@@ -211,7 +218,8 @@ http://192.168.1.166:8006/snapshot?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mp
 
 
 效果预览：
-![img.png](imgs/img67.png)
+
+<img src="imgs/img67.png" alt="image-20250718084834878" style="width:70%;" />
 
 ### RTMP实时快照测试
 测试视频源地址是：rtsp://192.168.1.166/myapp/2k-H264-G711A.mp4
@@ -220,4 +228,6 @@ http://192.168.1.166:8006/snapshot?cam_url=rtmp://192.168.1.166/myapp/2k-H264-G7
 
 
 效果预览：
-![img.png](imgs/img68.png)
+
+
+<img src="imgs/img68.png" alt="image-20250718084834878" style="width:80%;" />
