@@ -183,7 +183,8 @@ cd happytime-rtmp-server
 ```bash
 ffplay -i 'http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mp4'
 ```
-![img.png](imgs/img66.png)
+<img src="imgs/img66.png" alt="image-20250718084834878" style="zoom:67%;" />
+
 2. 使用vlc播放
 在VLC菜单项中依次点击--File--Open Network
 将如下的链接填入输出框：
