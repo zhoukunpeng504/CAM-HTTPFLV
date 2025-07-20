@@ -80,18 +80,21 @@ pip3 install -r requirements.txt
 python3 server.py
 ```
 ### 功能1：视频源转HTTPFLV直播流
-```bash
-http://192.168.1.166:8005/cam_url=XX&cam_type=YY
-XX: 视频源URL。如: 
-   - rtsp://192.168.1.166/720p-H264-AAC.mp4、rtmp://192.168.1.166/myapp/720p-H264-AAC.mp4
-```
+URL:http://192.168.1.166:8005/cam_url=XX
+- XX: 视频源URL。如:rtsp://192.168.1.166/720p-H264-AAC.mp4、rtmp://192.168.1.166/myapp/720p-H264-AAC.mp4
+
+如何使用？
+1. 根据使用场景，拼接url，如：视频源地址为rtmp://192.168.1.166/myapp/720p-H264-AAC.mp4，则转换后的HTTPFLV视频流地址为：
+http://192.168.1.166:8005/cam_url=rtmp://192.168.1.166/myapp/720p-H264-AAC.mp4
+2. 将地址填入播放器中，开始播放。目前支持的播放器：VLC、ffplay(ffmpeg)、jessibuca、flv.js
+
 
 ### 功能2：视频源实时快照
-```bash
-http://192.168.1.166:8006/snapshot?cam_url=XX
-XX: 视频源URL。如: 
-   - rtsp://192.168.1.166/720p-H264-AAC.mp4、rtmp://192.168.1.166/myapp/720p-H264-AAC.mp4
-```
+URL:http://192.168.1.166:8006/snapshot?cam_url=XX
+- XX: 视频源URL。如:rtsp://192.168.1.166/720p-H264-AAC.mp4、rtmp://192.168.1.166/myapp/720p-H264-AAC.mp4
+如何使用？
+通过GET请求向该地址发起请求即可得到视频源当前的快照图片，格式为jpg。
+
 
 ## 准备RTSP及RTMP测试视频流
 我们提供了RTSP server测试程序和RTMP server测试程序。 
