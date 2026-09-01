@@ -27,9 +27,10 @@ from gevent.queue import Queue
 import traceback
 
 
+BASE_PATH = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__, #template_folder=os.path.join(BASE_PATH, 'templates'),
-            #static_folder=os.path.join(BASE_PATH, 'static'),
-            #static_url_path = '/static'
+            static_folder=os.path.join(BASE_PATH, 'static'),
+            static_url_path = '/static'
             )
 app.debug = True
 # 允许跨域

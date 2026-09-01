@@ -1,0 +1,452 @@
+/* ==========================================================================
+   Jessibuca 本地化 Demo 播放器样式（浅色，纯白页面背景）
+   ========================================================================== */
+
+:root {
+    --jb-text: #2c3e50;
+    --jb-muted: #6b7280;
+    --jb-faint: #9aa0a6;
+    --jb-line: #e3e5e8;
+    --jb-line-soft: #f0f1f3;
+    --jb-fill: #f5f6f7;
+    --jb-fill-2: #eceef0;
+    --jb-accent: #4a9eff;
+    --jb-radius: 6px;
+    --jb-radius-sm: 4px;
+
+    /* Bootstrap 微调，保持与自定义控件一致 */
+    --bs-primary: #4a9eff;
+    --bs-primary-rgb: 74, 158, 255;
+    --bs-border-color: #e3e5e8;
+}
+
+body {
+    background: #ffffff;
+    color: var(--jb-text);
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.jb-page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+}
+
+/* ---------------- 核心播放面板 ---------------- */
+.jb-panel {
+    border: 1px solid var(--jb-line);
+    border-radius: var(--jb-radius);
+    background: var(--jb-fill);
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+}
+
+.jb-panel-title {
+    padding: 10px 14px;
+    background: var(--jb-fill-2);
+    border-bottom: 1px solid var(--jb-line);
+    color: #4a4a4a;
+    font-size: 15px;
+    letter-spacing: .2px;
+}
+
+/* 播放器容器：16:9，jessibuca 在其中创建 canvas / video
+   未播放时 canvas 是浏览器默认的 300x150，会被居中留出四周空白；
+   这里用与面板一致的浅灰底色，避免出现黑框 */
+#container {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--jb-fill);
+}
+
+.jb-controls {
+    padding: 12px 14px 14px;
+    background: #fff;
+    border-top: 1px solid var(--jb-line);
+}
+
+.jb-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    margin-bottom: 10px;
+}
+
+.jb-row:last-child { margin-bottom: 0; }
+
+.jb-row label { margin: 0; }
+
+.jb-row > span { color: var(--jb-muted); }
+
+.jb-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.jb-check input {
+    margin: 0;
+    width: 14px;
+    height: 14px;
+    accent-color: var(--jb-accent);
+    cursor: pointer;
+}
+
+.jb-check:hover { color: #1f2937; }
+
+/* ---------------- 输入框 ---------------- */
+.jb-input {
+    height: 30px;
+    padding: 2px 8px;
+    border: 1px solid #c9ccd1;
+    border-radius: var(--jb-radius-sm);
+    background: #fff;
+    color: var(--jb-text);
+    width: 90px;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.jb-input::placeholder { color: #b0b5bd; }
+
+.jb-input.jb-url { flex: 1 1 260px; width: auto; min-width: 0; }
+
+.jb-input:hover { border-color: #b3b8bf; }
+
+.jb-input:focus {
+    outline: none;
+    border-color: var(--jb-accent);
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, .16);
+}
+
+/* ---------------- 按钮 ---------------- */
+.jb-btn {
+    height: 30px;
+    padding: 0 14px;
+    border: 1px solid #c9ccd1;
+    border-radius: var(--jb-radius-sm);
+    background: #fff;
+    color: var(--jb-text);
+    cursor: pointer;
+    transition: background .15s, border-color .15s, box-shadow .15s;
+}
+
+.jb-btn:hover { background: #f0f1f3; border-color: #b3b8bf; }
+.jb-btn:active { background: #e6e8ea; }
+
+.jb-btn:focus-visible {
+    outline: none;
+    border-color: var(--jb-accent);
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, .16);
+}
+
+.jb-btn-primary {
+    border-color: #3d8ee8;
+    background: var(--jb-accent);
+    color: #fff;
+    font-weight: 500;
+}
+
+.jb-btn-primary:hover { background: #3d8ee8; border-color: #3d8ee8; }
+.jb-btn-primary:active { background: #357fd1; border-color: #357fd1; }
+
+.jb-btn-danger {
+    border-color: #e6b8bd;
+    color: #d1242f;
+}
+
+.jb-btn-danger:hover { background: #fdf1f2; border-color: #d1242f; }
+.jb-btn-danger:active { background: #fae3e5; border-color: #d1242f; }
+
+/* 播放行的按钮定宽，省出的空间由 .jb-url 自动吸收 */
+.jb-row-play .jb-btn {
+    flex: none;
+    width: 43px;          /* 播放 / 销毁：48px 收窄 10% */
+    padding: 0;
+    font-size: 13px;
+}
+
+/* 静音：74px 收窄 40%；文案两种状态都是两个字，宽度恒定 */
+.jb-row-play .jb-btn-mute {
+    width: 44px;
+    min-width: 0;
+}
+
+/* 音量：与 toggle控制条 同排 */
+.jb-volume {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    width: 168px;
+    padding: 0 8px;
+    border: 1px solid #c9ccd1;
+    border-radius: var(--jb-radius-sm);
+    background: #fff;
+    font-size: 13px;
+}
+
+.jb-volume > span { flex: none; white-space: nowrap; }
+
+.jb-volume-label { color: var(--jb-muted); }
+
+.jb-volume .form-range {
+    flex: 1 1 auto;
+    min-width: 0;
+    accent-color: var(--jb-accent);
+}
+
+.jb-volume #volumeText {
+    width: 26px;
+    text-align: right;
+    color: var(--jb-text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------------- 说明文案 ---------------- */
+.jb-tips {
+    margin: 22px 0 28px;
+    line-height: 1.9;
+    color: #3c4043;
+}
+
+.jb-tips ol {
+    margin: 6px 0;
+    padding-left: 22px;
+}
+
+.jb-tips code {
+    color: #c7254e;
+    background: #f7f7f9;
+    padding: .1rem .3rem;
+    border-radius: 3px;
+}
+
+/* ---------------- 更多控制 ---------------- */
+.jb-extra {
+    margin-top: 18px;
+    border: 1px solid var(--jb-line);
+    border-radius: var(--jb-radius);
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+}
+
+.jb-extra-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--jb-fill);
+    border-bottom: 1px solid var(--jb-line);
+    color: #4a4a4a;
+}
+
+.jb-support {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--jb-muted);
+}
+
+.jb-support .badge {
+    font-weight: 500;
+    font-size: 11px;
+    padding: .35em .6em;
+    border-radius: 999px;
+}
+
+.jb-badge-off {
+    background: #eceef0 !important;
+    color: #8b929c !important;
+    border: 1px solid var(--jb-line);
+}
+
+.jb-extra-body { padding: 14px; }
+
+/* 工具按钮 */
+.jb-extra-body .btn-sm {
+    --bs-btn-border-radius: var(--jb-radius-sm);
+    --bs-btn-padding-y: .28rem;
+    --bs-btn-padding-x: .7rem;
+}
+
+.jb-extra-body .btn-outline-secondary {
+    --bs-btn-color: #4b5563;
+    --bs-btn-border-color: #c9ccd1;
+    --bs-btn-hover-color: #1f2937;
+    --bs-btn-hover-bg: #f0f1f3;
+    --bs-btn-hover-border-color: #b3b8bf;
+    --bs-btn-active-color: #1f2937;
+    --bs-btn-active-bg: #e6e8ea;
+    --bs-btn-active-border-color: #b3b8bf;
+}
+
+/* player.js 在「未录制」时会切到 btn-outline-light，浅色页面下需要可见的描边 */
+.jb-extra-body .btn-outline-light {
+    --bs-btn-color: #4b5563;
+    --bs-btn-border-color: #c9ccd1;
+    --bs-btn-hover-color: #1f2937;
+    --bs-btn-hover-bg: #f0f1f3;
+    --bs-btn-hover-border-color: #b3b8bf;
+}
+
+/* 播放 / 录制状态 */
+.jb-state { white-space: nowrap; }
+
+.jb-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #c9ccd1;
+    margin-right: .35rem;
+    vertical-align: middle;
+}
+
+.jb-dot.on {
+    background: #28a745;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, .15);
+}
+
+.jb-dot.rec {
+    background: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, .15);
+    animation: jb-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes jb-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: .4; }
+}
+
+/* ---------------- 标签页 ---------------- */
+.jb-extra .nav-tabs {
+    gap: 2px;
+    border-bottom: 1px solid var(--jb-line);
+}
+
+.jb-extra .nav-tabs .nav-link {
+    border: 0;
+    padding: .4rem .9rem;
+    font-size: 13px;
+    color: var(--jb-muted);
+    border-radius: var(--jb-radius-sm) var(--jb-radius-sm) 0 0;
+    position: relative;
+}
+
+.jb-extra .nav-tabs .nav-link:hover { color: var(--jb-text); background: #f5f6f7; }
+
+.jb-extra .nav-tabs .nav-link.active {
+    color: #1f6fd0;
+    background: transparent;
+}
+
+.jb-extra .nav-tabs .nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: .55rem;
+    right: .55rem;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--jb-accent);
+}
+
+/* ---------------- 配置表单 ---------------- */
+.jb-extra .form-label { color: var(--jb-muted); }
+
+.jb-extra .form-control:focus,
+.jb-extra .form-select:focus {
+    border-color: var(--jb-accent);
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, .16);
+}
+
+.jb-extra .form-check-input:checked {
+    background-color: var(--jb-accent);
+    border-color: var(--jb-accent);
+}
+
+.jb-extra .form-check-input:focus {
+    border-color: var(--jb-accent);
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, .16);
+}
+
+.jb-config-group {
+    padding: 12px;
+    border: 1px solid var(--jb-line);
+    border-radius: var(--jb-radius-sm);
+    background: #fbfbfc;
+}
+
+#dirtyTip { color: #b26b00 !important; }
+
+/* ---------------- 状态表 ---------------- */
+.jb-stats { width: 100%; }
+
+.jb-stats td {
+    padding: .35rem .45rem;
+    border-bottom: 1px solid var(--jb-line-soft);
+    font-size: 13px;
+}
+
+.jb-stats tr:last-child td { border-bottom: 0; }
+
+.jb-stats td:first-child {
+    color: var(--jb-muted);
+    width: 45%;
+    white-space: nowrap;
+}
+
+.jb-stats td:last-child {
+    font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------------- 日志 ---------------- */
+#logPanel {
+    height: 260px;
+    overflow-y: auto;
+    background: #fbfbfc;
+    border: 1px solid var(--jb-line);
+    border-radius: var(--jb-radius-sm);
+    padding: .5rem .65rem;
+    font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+#logPanel::-webkit-scrollbar { width: 8px; }
+#logPanel::-webkit-scrollbar-thumb { background: #d7dade; border-radius: 8px; }
+
+.jb-log-time { color: var(--jb-faint); margin-right: .4rem; }
+.jb-log-info { color: #3c4043; }
+.jb-log-success { color: #1a7f37; }
+.jb-log-warn { color: #b26b00; }
+.jb-log-error { color: #d1242f; }
+
+/* ---------------- 页脚 ---------------- */
+.jb-footer {
+    margin-top: 24px;
+    color: var(--jb-faint);
+    font-size: 12px;
+}
+
+/* ---------------- 响应式 ---------------- */
+@media (max-width: 575.98px) {
+    .jb-page { padding: 16px 12px 36px; }
+    .jb-controls, .jb-extra-body { padding: 12px; }
+    .jb-volume { width: 100%; }
+    .jb-state { width: 100%; margin-left: 0 !important; }
+}

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>jessibuca demo player</title>
+    <link rel="stylesheet" href="player/vendor/bootstrap.min.css">
+    <link rel="stylesheet" href="player/css/player.css">
+</head>
+<body>
+
+<div class="jb-page">
+
+    <!-- ============ 核心播放面板 ============ -->
+    <div class="jb-panel">
+        <div class="jb-panel-title">jessibuca demo player</div>
+
+        <div id="container"></div>
+
+        <div class="jb-controls">
+            <div class="jb-row">
+                <label for="videoBuffer">缓冲(秒):</label>
+                <input type="number" class="jb-input jb-init-opt" id="videoBuffer" min="0" max="10" step="0.1" value="0.2">
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-init-opt" id="optDebug" checked> 开启日志
+                </label>
+                <button class="jb-btn" id="btnToggleControl" type="button">toggle控制条</button>
+                <div class="jb-volume">
+                    <span class="jb-volume-label">音量</span>
+                    <input type="range" class="form-range" id="volume" min="0" max="100" step="1" value="100">
+                    <span id="volumeText">100</span>
+                </div>
+            </div>
+
+            <div class="jb-row">
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-init-opt" id="optIsFlv" checked> 设置Flv格式
+                </label>
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-init-opt" id="optControlAutoHide" checked> 控制栏自动隐藏(移动端不支持)
+                </label>
+            </div>
+
+            <div class="jb-row">
+                <span>解码器：</span>
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-decoder jb-init-opt" name="decodeMode" id="modeMse" value="mse"> MediaSource
+                </label>
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-decoder jb-init-opt" name="decodeMode" id="modeWcs" value="wcs"> webcodecs
+                </label>
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-decoder jb-init-opt" name="decodeMode" id="modeWasm" value="wasm" checked> wasm
+                </label>
+            </div>
+
+            <div class="jb-row jb-row-play">
+                <label for="playUrl">输入URL：</label>
+                <input type="text" class="jb-input jb-url" id="playUrl" list="urlHistory" placeholder="支持ws-raw/ws-flv/http-flv协议">
+                <datalist id="urlHistory"></datalist>
+                <button class="jb-btn jb-btn-primary" id="btnPlay" type="button">播放</button>
+                <button class="jb-btn jb-btn-danger" id="btnDestroy" type="button">销毁</button>
+                <button class="jb-btn jb-btn-mute" id="btnMute" type="button">静音</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ============ 更多控制 / 配置 / 状态 / 日志 ============ -->
+    <div class="jb-extra">
+        <div class="jb-extra-head">
+            <span>更多控制</span>
+            <span class="jb-support">
+                内核 <span class="badge text-bg-secondary" id="coreVersion">-</span>
+                <span class="ms-2">支持：</span>
+                <span class="badge jb-badge-off" id="supMse">MediaSource</span>
+                <span class="badge jb-badge-off" id="supWcs">WebCodecs</span>
+                <span class="badge jb-badge-off" id="supWasm">WebAssembly</span>
+            </span>
+        </div>
+
+        <div class="jb-extra-body">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                <button class="btn btn-sm btn-outline-secondary" id="btnPause" type="button">暂停</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnClose" type="button">停止</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnScreenshot" type="button">截图</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnRecord" type="button">开始录制</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnFullscreen" type="button">全屏</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnClearView" type="button">清屏</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnResize" type="button">重设大小</button>
+                <span class="ms-auto small text-muted jb-state">
+                    <span class="jb-dot" id="dotPlay"></span><span id="playStateText">未播放</span>
+                    <span class="jb-dot ms-3" id="dotRecord"></span><span id="recordStateText">未录制</span>
+                </span>
+            </div>
+
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabConfig" type="button" role="tab">配置</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabStats" type="button" role="tab">状态</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabLog" type="button" role="tab">日志</button>
+                </li>
+            </ul>
+
+            <div class="tab-content pt-3">
+                <!-- 配置 -->
+                <div class="tab-pane fade show active" id="tabConfig" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small mb-1" for="loadingTimeout">loading超时(秒)</label>
+                            <input type="number" class="form-control form-control-sm jb-init-opt" id="loadingTimeout" min="1" max="120" step="1" value="10">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small mb-1" for="heartTimeout">心跳超时(秒)</label>
+                            <input type="number" class="form-control form-control-sm jb-init-opt" id="heartTimeout" min="1" max="120" step="1" value="10">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small mb-1" for="scaleMode">缩放模式</label>
+                            <select class="form-select form-select-sm" id="scaleMode">
+                                <option value="0">0 完全填充(拉伸)</option>
+                                <option value="1" selected>1 等比缩放(有黑边)</option>
+                                <option value="2">2 等比填充(裁剪)</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small mb-1" for="rotate">旋转角度</label>
+                            <select class="form-select form-select-sm" id="rotate">
+                                <option value="0" selected>0°</option>
+                                <option value="90">90°</option>
+                                <option value="180">180°</option>
+                                <option value="270">270°</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small mb-1" for="recordType">录制格式</label>
+                            <select class="form-select form-select-sm jb-init-opt" id="recordType">
+                                <option value="webm" selected>webm</option>
+                                <option value="mp4">mp4</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="jb-config-group mt-3">
+                        <div class="row g-2">
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optHasAudio" checked>
+                                    <label class="form-check-label small" for="optHasAudio">解码音频</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optIsNotMute">
+                                    <label class="form-check-label small" for="optIsNotMute">默认不静音</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optShowBandwidth" checked>
+                                    <label class="form-check-label small" for="optShowBandwidth">显示网速</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optHotKey" checked>
+                                    <label class="form-check-label small" for="optHotKey">键盘快捷键</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optAutoWasm" checked>
+                                    <label class="form-check-label small" for="optAutoWasm">硬解失败降级wasm</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optDblclick" checked>
+                                    <label class="form-check-label small" for="optDblclick">双击全屏</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optHiddenAutoPause">
+                                    <label class="form-check-label small" for="optHiddenAutoPause">后台自动暂停</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optKeepScreenOn">
+                                    <label class="form-check-label small" for="optKeepScreenOn">屏幕常亮</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optTimeoutReplay">
+                                    <label class="form-check-label small" for="optTimeoutReplay">超时自动重播</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center flex-wrap gap-2 mt-3">
+                        <button class="btn btn-sm btn-outline-primary" id="btnApply" type="button">应用配置(重建播放器)</button>
+                        <span class="small text-muted" id="dirtyTip" style="display:none;">配置已修改，将在播放时生效</span>
+                    </div>
+                </div>
+
+                <!-- 状态 -->
+                <div class="tab-pane fade" id="tabStats" role="tabpanel">
+                    <div class="row g-0 gx-md-4">
+                        <div class="col-12 col-md-6">
+                            <table class="jb-stats">
+                                <tbody>
+                                <tr><td>播放状态</td><td id="stPlaying">-</td></tr>
+                                <tr><td>视频分辨率</td><td id="stResolution">-</td></tr>
+                                <tr><td>音频信息</td><td id="stAudio">-</td></tr>
+                                <tr><td>帧率 fps</td><td id="stFps">-</td></tr>
+                                <tr><td>视频码率 vbps</td><td id="stVbps">-</td></tr>
+                                <tr><td>音频码率 abps</td><td id="stAbps">-</td></tr>
+                                <tr><td>缓冲 buf(ms)</td><td id="stBuf">-</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <table class="jb-stats">
+                                <tbody>
+                                <tr><td>视频帧 pts(ms)</td><td id="stTs">-</td></tr>
+                                <tr><td>网速 kBps</td><td id="stKbps">-</td></tr>
+                                <tr><td>渲染性能</td><td id="stPerformance">-</td></tr>
+                                <tr><td>播放时长</td><td id="stDuration">-</td></tr>
+                                <tr><td>首帧耗时</td><td id="stFirstFrame">-</td></tr>
+                                <tr><td>录制时长</td><td id="stRecordTime">-</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 日志 -->
+                <div class="tab-pane fade" id="tabLog" role="tabpanel">
+                    <div class="d-flex justify-content-end mb-2">
+                        <button class="btn btn-sm btn-outline-secondary" id="btnClearLog" type="button">清空日志</button>
+                    </div>
+                    <div id="logPanel"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="jb-footer">
+        本页面为完全本地化版本，jessibuca 内核、decoder.wasm、jQuery、Bootstrap 等资源均以相对路径引用，无任何外网依赖。
+    </p>
+</div>
+
+<script src="player/vendor/jquery.min.js"></script>
+<script src="player/vendor/bootstrap.bundle.min.js"></script>
+<script src="player/jessibuca/jessibuca.js"></script>
+<script src="player/js/player.js"></script>
+</body>
+</html>
