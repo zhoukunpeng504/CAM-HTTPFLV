@@ -132,10 +132,21 @@ def av_function(cam_url, redis_url,
             _out_stream.time_base = fractions.Fraction(1, 1000) #'1/1000'
             # time_base对齐
 
-            _out_stream.codec_context.options = {
-                # 'tune': 'zerolatency',
-                'preset': 'ultrafast'
-            }
+            _out_stream.codec_context.options = {"level": '41',
+                                    #'Profile': 'High',
+                                    'tune': 'zerolatency',
+                                    'preset': 'ultrafast',
+                                    'crf': '10',
+                                    'threads': '10',
+                                    # 'color_primaries': str(color_primaries),
+                                    # 'color_range': str(color_range),
+                                    # 'color_trc': str(color_trc),
+                                    # 'colorspace': str(colorspace),
+                                    'profile': 'baseline', # output_kw_params['video']['profile'],  # '3', # str(profile).lower(),
+                                    'rc': "vbr",
+                                    #'annexb': '0'
+                                    # 'rgb_mode': "1"
+                                    }
             if audio:
                 print("audio time base", audio.time_base,audio.codec_context, audio.codec_context.rate,
                       audio.codec_context.layout.name)
@@ -192,6 +203,7 @@ def av_function(cam_url, redis_url,
                             print_to_logger("mux except:", str(e))
                     else:
                         # 需要转码
+                        print("video _p", _p, _p.time_base, _p.dts, _p.pts,_p.is_keyframe)
                         frames = _p.decode()
                         for frame in frames:
                             counter += 1
@@ -200,6 +212,7 @@ def av_function(cam_url, redis_url,
                                 # _out_stream.height = 540
                                 # print(frame)
                                 _packets = _out_stream.encode(frame)
+                                print("video _packets:", _packets)
                                 for _p in _packets:
                                     # _p.time_base = '1/1000'
                                     _p.dts = frame.pts
@@ -208,7 +221,7 @@ def av_function(cam_url, redis_url,
                                     # print(_p)
                                     output.mux(_p)
                             except (Exception, BaseException) as e:
-                                print_to_logger("decode and mux except:", str(e))
+                                print("decode and mux except:", str(e))
 
                 # if _p.stream_index == 1 and _out_stream_audio:
                 elif 'audio' in str(_p.stream.codec_context) and _out_stream_audio:
