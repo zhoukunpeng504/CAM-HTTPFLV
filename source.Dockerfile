@@ -6,6 +6,7 @@ RUN mkdir -p /data/logs
 COPY ./testdir  /data/code
 WORKDIR /data/code
 # pip源设置
+RUN ls -al /data/code
 RUN cd /data/code/ && unzip -o happytime-rtmp-server.zip && unzip -o happytime-rtsp-server.zip
 #
 ENV PYTHONUNBUFFERED=1
