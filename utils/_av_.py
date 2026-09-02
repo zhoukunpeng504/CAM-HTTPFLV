@@ -142,7 +142,7 @@ def av_function(cam_url, redis_url,
                                     # 'color_range': str(color_range),
                                     # 'color_trc': str(color_trc),
                                     # 'colorspace': str(colorspace),
-                                    'profile': 'baseline', # output_kw_params['video']['profile'],  # '3', # str(profile).lower(),
+                                    #'profile': 'baseline', # output_kw_params['video']['profile'],  # '3', # str(profile).lower(),
                                     'rc': "vbr",
                                     #'annexb': '0'
                                     # 'rgb_mode': "1"
