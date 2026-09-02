@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>jessibuca demo player</title>
+    <link rel="stylesheet" href="player/vendor/bootstrap.min.css">
+    <link rel="stylesheet" href="player/css/player.css">
+</head>
+<body>
+
+<div class="jb-page">
+
+    <!-- ============ Main player panel ============ -->
+    <div class="jb-panel">
+        <div class="jb-panel-title">jessibuca demo player</div>
+
+        <div id="container"></div>
+
+        <div class="jb-controls">
+            <div class="jb-row">
+                <label for="videoBuffer">Buffer (s):</label>
+                <input type="number" class="jb-input jb-init-opt" id="videoBuffer" min="0" max="10" step="0.1" value="0.2">
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-init-opt" id="optDebug" checked> Enable log
+                </label>
+                <button class="jb-btn" id="btnToggleControl" type="button">Toggle controls</button>
+                <div class="jb-volume">
+                    <span class="jb-volume-label">Volume</span>
+                    <input type="range" class="form-range" id="volume" min="0" max="100" step="1" value="100">
+                    <span id="volumeText">100</span>
+                </div>
+            </div>
+
+            <div class="jb-row">
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-init-opt" id="optIsFlv" checked> Force FLV
+                </label>
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-init-opt" id="optControlAutoHide" checked> Auto-hide controls (desktop only)
+                </label>
+            </div>
+
+            <div class="jb-row">
+                <span>Decoder:</span>
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-decoder jb-init-opt" name="decodeMode" id="modeMse" value="mse"> MediaSource
+                </label>
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-decoder jb-init-opt" name="decodeMode" id="modeWcs" value="wcs"> webcodecs
+                </label>
+                <label class="jb-check">
+                    <input type="checkbox" class="jb-decoder jb-init-opt" name="decodeMode" id="modeWasm" value="wasm" checked> wasm
+                </label>
+            </div>
+
+            <div class="jb-row jb-row-play">
+                <label for="playUrl">Stream URL:</label>
+                <input type="text" class="jb-input jb-url" id="playUrl" list="urlHistory" placeholder="ws-raw / ws-flv / http-flv supported">
+                <datalist id="urlHistory"></datalist>
+                <button class="jb-btn jb-btn-primary" id="btnPlay" type="button">Play</button>
+                <button class="jb-btn jb-btn-danger" id="btnDestroy" type="button">Destroy</button>
+                <button class="jb-btn jb-btn-mute" id="btnMute" type="button">Mute</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ============ More controls / settings / stats / log ============ -->
+    <div class="jb-extra">
+        <div class="jb-extra-head">
+            <span>More controls</span>
+            <span class="jb-support">
+                Core <span class="badge text-bg-secondary" id="coreVersion">-</span>
+                <span class="ms-2">Supports:</span>
+                <span class="badge jb-badge-off" id="supMse">MediaSource</span>
+                <span class="badge jb-badge-off" id="supWcs">WebCodecs</span>
+                <span class="badge jb-badge-off" id="supWasm">WebAssembly</span>
+            </span>
+        </div>
+
+        <div class="jb-extra-body">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                <button class="btn btn-sm btn-outline-secondary" id="btnPause" type="button">Pause</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnClose" type="button">Stop</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnScreenshot" type="button">Snapshot</button>
+                <button class="btn btn-sm btn-outline-light" id="btnRecord" type="button">Start recording</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnFullscreen" type="button">Fullscreen</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnClearView" type="button">Clear canvas</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnResize" type="button">Resize</button>
+                <span class="ms-auto small text-muted jb-state">
+                    <span class="jb-dot" id="dotPlay"></span><span id="playStateText">Not playing</span>
+                    <span class="jb-dot ms-3" id="dotRecord"></span><span id="recordStateText">Not recording</span>
+                </span>
+            </div>
+
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabConfig" type="button" role="tab">Settings</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabStats" type="button" role="tab">Stats</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabLog" type="button" role="tab">Log</button>
+                </li>
+            </ul>
+
+            <div class="tab-content pt-3">
+                <!-- Settings -->
+                <div class="tab-pane fade show active" id="tabConfig" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small mb-1" for="loadingTimeout">Loading timeout (s)</label>
+                            <input type="number" class="form-control form-control-sm jb-init-opt" id="loadingTimeout" min="1" max="120" step="1" value="10">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small mb-1" for="heartTimeout">Heartbeat timeout (s)</label>
+                            <input type="number" class="form-control form-control-sm jb-init-opt" id="heartTimeout" min="1" max="120" step="1" value="10">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small mb-1" for="scaleMode">Scale mode</label>
+                            <select class="form-select form-select-sm" id="scaleMode">
+                                <option value="0">0 Stretch to fill</option>
+                                <option value="1" selected>1 Fit (letterboxed)</option>
+                                <option value="2">2 Fill (cropped)</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small mb-1" for="rotate">Rotation</label>
+                            <select class="form-select form-select-sm" id="rotate">
+                                <option value="0" selected>0°</option>
+                                <option value="90">90°</option>
+                                <option value="180">180°</option>
+                                <option value="270">270°</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small mb-1" for="recordType">Recording format</label>
+                            <select class="form-select form-select-sm jb-init-opt" id="recordType">
+                                <option value="webm" selected>webm</option>
+                                <option value="mp4">mp4</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="jb-config-group mt-3">
+                        <div class="row g-2">
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optHasAudio" checked>
+                                    <label class="form-check-label small" for="optHasAudio">Decode audio</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optIsNotMute">
+                                    <label class="form-check-label small" for="optIsNotMute">Unmuted by default</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optShowBandwidth" checked>
+                                    <label class="form-check-label small" for="optShowBandwidth">Show bandwidth</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optHotKey" checked>
+                                    <label class="form-check-label small" for="optHotKey">Keyboard shortcuts</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optAutoWasm" checked>
+                                    <label class="form-check-label small" for="optAutoWasm">Fall back to wasm</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optDblclick" checked>
+                                    <label class="form-check-label small" for="optDblclick">Double-click fullscreen</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optHiddenAutoPause">
+                                    <label class="form-check-label small" for="optHiddenAutoPause">Pause when hidden</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optKeepScreenOn">
+                                    <label class="form-check-label small" for="optKeepScreenOn">Keep screen on</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input jb-init-opt" type="checkbox" id="optTimeoutReplay">
+                                    <label class="form-check-label small" for="optTimeoutReplay">Auto-replay on timeout</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center flex-wrap gap-2 mt-3">
+                        <button class="btn btn-sm btn-outline-primary" id="btnApply" type="button">Apply settings (rebuild player)</button>
+                        <span class="small text-muted" id="dirtyTip" style="display:none;">Settings changed — they take effect on the next play</span>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="tab-pane fade" id="tabStats" role="tabpanel">
+                    <div class="row g-0 gx-md-4">
+                        <div class="col-12 col-md-6">
+                            <table class="jb-stats">
+                                <tbody>
+                                <tr><td>Playback state</td><td id="stPlaying">-</td></tr>
+                                <tr><td>Resolution</td><td id="stResolution">-</td></tr>
+                                <tr><td>Audio</td><td id="stAudio">-</td></tr>
+                                <tr><td>Frame rate (fps)</td><td id="stFps">-</td></tr>
+                                <tr><td>Video bitrate (vbps)</td><td id="stVbps">-</td></tr>
+                                <tr><td>Audio bitrate (abps)</td><td id="stAbps">-</td></tr>
+                                <tr><td>Buffer (ms)</td><td id="stBuf">-</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <table class="jb-stats">
+                                <tbody>
+                                <tr><td>Video PTS (ms)</td><td id="stTs">-</td></tr>
+                                <tr><td>Bandwidth (kB/s)</td><td id="stKbps">-</td></tr>
+                                <tr><td>Render performance</td><td id="stPerformance">-</td></tr>
+                                <tr><td>Playback duration</td><td id="stDuration">-</td></tr>
+                                <tr><td>First frame</td><td id="stFirstFrame">-</td></tr>
+                                <tr><td>Recording duration</td><td id="stRecordTime">-</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Log -->
+                <div class="tab-pane fade" id="tabLog" role="tabpanel">
+                    <div class="d-flex justify-content-end mb-2">
+                        <button class="btn btn-sm btn-outline-secondary" id="btnClearLog" type="button">Clear log</button>
+                    </div>
+                    <div id="logPanel"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="jb-footer">
+        Fully self-contained build — the jessibuca core, decoder.wasm, jQuery and Bootstrap are all referenced by relative paths, with no external dependencies.
+    </p>
+</div>
+
+<script src="player/vendor/jquery.min.js"></script>
+<script src="player/vendor/bootstrap.bundle.min.js"></script>
+<script src="player/jessibuca/jessibuca.js"></script>
+<script src="player/js/player-en.js"></script>
+</body>
+</html>

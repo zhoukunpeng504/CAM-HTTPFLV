@@ -443,6 +443,25 @@ body {
     font-size: 12px;
 }
 
+/* ---------------- 英文版（player_en.html）尺寸修正 ----------------
+   中文标签是等宽的两个汉字，按钮可以定死 43/44px；英文标签长短不一，
+   这里按内容排版，并把静音按钮固定成 Unmute 的宽度以免切换时抖动。 */
+html[lang="en"] .jb-row-play .jb-btn {
+    width: auto;
+    padding: 0 12px;
+}
+
+html[lang="en"] .jb-row-play .jb-btn-mute {
+    width: 74px;        /* Unmute 的实际宽度，Mute 状态下也保持不变 */
+    padding: 0;
+}
+
+/* Volume 比「音量」宽约 19px，容器同步放宽，滑块长度才不会被挤掉 */
+html[lang="en"] .jb-volume { width: 190px; }
+
+/* 英文指标名更长，状态表左列多让出一些 */
+html[lang="en"] .jb-stats td:first-child { width: 52%; }
+
 /* ---------------- 响应式 ---------------- */
 @media (max-width: 575.98px) {
     .jb-page { padding: 16px 12px 36px; }
