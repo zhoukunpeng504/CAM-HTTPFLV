@@ -7,7 +7,7 @@ RUN mkdir -p /data/logs
 COPY .  /data/code
 WORKDIR /data/code
 # pip源设置
-RUN rm -rf ~/.pip && mkdir ~/.pip
+RUN rm -rf ~/.pip && mkdir ~/.pip  && rm  -rf /data/code/testdir
 RUN cd /data/code && pip3 install -r requirements.txt
 #RUN mkdir -p /data/rtsp_py
 # REDIS地址，如有密码把密码按格式组装到REDIS_URL  中
