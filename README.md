@@ -119,20 +119,9 @@ We provide test servers for both RTSP and RTMP formats. Ensure the following por
 - TCP 1935
 
 Launch test streams:
-
+only  for x86  linux servers with the Docker CLI. 
 ```bash
-git clone git@github.com:zhoukunpeng504/CAM-HTTPFLV.git
-cd CAM-HTTPFLV/testdir
-unzip happytime-rtsp-server.zip
-unzip happytime-rtmp-server.zip
-
-# Start RTSP server
-cd happytime-rtsp-server
-./start.sh
-
-# Start RTMP server
-cd ../happytime-rtmp-server
-./start.sh
+docker run -itd --net=host --name=rtsp-rtmp-videosources --restart=always zhoukunpeng505/cam-httpflv-videosource:2026-09-02-6041972 
 ```
 
 See the full list of test video stream URLs in the original documentation.

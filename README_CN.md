@@ -102,19 +102,9 @@ URL:http://192.168.1.166:8006/snapshot?cam_url=XX
 ## 准备RTSP及RTMP测试视频流
 我们提供了RTSP server测试程序和RTMP server测试程序。 
 需提前保证TCP554 、UDP554、TCP1935 端口可用。
-可通过如下方式启动：
+可通过如下方式启动：（仅用于x86架构）
 ```bash
-git clone git@github.com:zhoukunpeng504/CAM-HTTPFLV.git
-cd CAM-HTTPFLV/testdir
-unzip happytime-rtsp-server.zip
-unzip happytime-rtmp-server.zip
-# 启动RTSP server
-cd happytime-rtsp-server
-./start.sh
-# 启动RTMP server
-cd ..
-cd happytime-rtmp-server
-./start.sh
+docker run -itd --net=host --name=rtsp-rtmp-videosources --restart=always zhoukunpeng505/cam-httpflv-videosource:2026-09-02-6041972 
 ```
 假设当前服务器IP为 192.168.1.166 那么所有的RTSP测试视频流如下：
 - rtsp://192.168.1.166/720p-H264-AAC.mp4 分辨率720p,视频编码H264,音频编码AAC
