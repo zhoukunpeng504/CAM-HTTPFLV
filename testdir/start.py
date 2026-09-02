@@ -5,6 +5,7 @@ import sys
 import time
 
 
+
 if __name__ == '__main__':
     os.system("cd /data/code/happytime-rtsp-server && sh start.sh")
     os.system("cd /data/code/happytime-rtmp-server && sh start.sh")
