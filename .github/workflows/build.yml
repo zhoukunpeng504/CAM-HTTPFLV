@@ -8,6 +8,7 @@ on:
       - 'config.json'
       - 'requirements.txt'
       - 'utils/**'
+      - 'static/**'
 
 env:
   TZ: Asia/Shanghai
