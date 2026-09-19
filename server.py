@@ -289,21 +289,21 @@ def handle(sock, address):
         print_to_logger(traceback.format_exc())
         sock.send(b"HTTP/1.1 404 Not Found\r\n\r\nNot Found")
     else:
-        if not is_websocket:
-            sock.send(b"HTTP/1.1 200 OK\r\n" +
-                      b"Access-Control-Allow-Methods: GET, OPTIONS\r\n"+
-                      b"Access-Control-Allow-Origin: *\r\n"+
-                      b"Access-Control-Allow-Credentials: true\r\n" +
-                      b"Content-Type: video/x-flv\r\n"+
-                      b"\r\n")
-        else:
-            msg = b'HTTP/1.1 101 Switching Protocols\r\n' + \
-                  b'Upgrade: websocket\r\n' + \
-                  b'Connection: Upgrade\r\n' + \
-                  (b'Sec-WebSocket-Accept: %s\r\n\r\n' % base64.b64encode(hashlib.sha1(ws_key.encode() +
-                                                                b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11").digest()))
-            # print_to_logger(msg)
-            sock.send(msg)
+        # if not is_websocket:
+        sock.send(b"HTTP/1.1 200 OK\r\n" +
+                  b"Access-Control-Allow-Methods: GET, OPTIONS\r\n"+
+                  b"Access-Control-Allow-Origin: *\r\n"+
+                  b"Access-Control-Allow-Credentials: true\r\n" +
+                  b"Content-Type: video/x-flv\r\n"+
+                  b"\r\n")
+        # else:
+        #     msg = b'HTTP/1.1 101 Switching Protocols\r\n' + \
+        #           b'Upgrade: websocket\r\n' + \
+        #           b'Connection: Upgrade\r\n' + \
+        #           (b'Sec-WebSocket-Accept: %s\r\n\r\n' % base64.b64encode(hashlib.sha1(ws_key.encode() +
+        #                                                         b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11").digest()))
+        #     # print_to_logger(msg)
+        #     sock.send(msg)
         # queue = multiprocessing.Queue(maxsize=150)
         # 模式选择
         # mode = 'TCP'
@@ -337,19 +337,19 @@ def handle(sock, address):
             else:
                 last_data_time = time.time()
                 print_to_logger("send_data")
-                if not is_websocket:
-                    try:
-                        sock.sendall(info)
-                    except Exception as e:
-                        print_to_logger("sock.sendall error", str(e))
-                        break
-                else:
-                    header = Header.encode_header(True, 0x02, b'', len(info), 0)
-                    try:
-                        sock.sendall(header+info)
-                    except Exception as e:
-                        print_to_logger("sock.sendall error", str(e))
-                        break
+                #if not is_websocket:
+                try:
+                    sock.sendall(info)
+                except Exception as e:
+                    print_to_logger("sock.sendall error", str(e))
+                    break
+                # else:
+                #     header = Header.encode_header(True, 0x02, b'', len(info), 0)
+                #     try:
+                #         sock.sendall(header+info)
+                #     except Exception as e:
+                #         print_to_logger("sock.sendall error", str(e))
+                #         break
         print_to_logger("kill")
         try:
             with open(f"/tmp/process_task/pids/{task_id}", "r") as f:
