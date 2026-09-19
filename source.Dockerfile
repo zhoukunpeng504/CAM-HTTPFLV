@@ -1,7 +1,7 @@
 FROM ubuntu:24.04
 MAINTAINER zhoukunpeng<zhoukunpeng504@163.com>
 RUN apt-get update
-RUN apt install -y vim htop gcc g++ pkg-config lrzsz redis nload python3 python3-pip python3-psutil python3-requests unzip libasound2-dev
+RUN apt install -y vim htop gcc g++ wget pkg-config lrzsz redis nload python3 python3-pip python3-psutil python3-requests unzip libasound2-dev
 RUN mkdir -p /data/logs
 COPY ./testdir  /data/code
 WORKDIR /data/code
