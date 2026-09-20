@@ -95,9 +95,9 @@ URL format:
 http://192.168.1.166:8005/?cam_url=XX
 ```
 - Replace `XX` with your video stream URL, e.g.,  
-  `rtsp://192.168.1.166/720p-H264-AAC.mp4`  
+  `rtsp://192.168.1.166/720p-H264-AAC.mkv`  
   or  
-  `rtmp://192.168.1.166/myapp/720p-H264-AAC.mp4`
+  `rtmp://192.168.1.166/myapp/720p-H264-AAC.mkv`
 
 Supported players: VLC, ffplay (from ffmpeg), jessibuca, flv.js
 
@@ -130,12 +130,12 @@ See the full list of test video stream URLs in the original documentation.
 
 Using sample RTSP stream:
 ```
-rtsp://192.168.1.166/2k-H264-G711A.mp4
+rtsp://192.168.1.166/2k-H264-G711A.mkv
 ```
 
 ### 1. Play with ffplay
 ```bash
-ffplay -i 'http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mp4'
+ffplay -i 'http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mkv'
 ```
 
 <img src="imgs/img66.png" alt="FFplay Playback" style="width:70%;" />
@@ -145,7 +145,7 @@ ffplay -i 'http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A
 Open VLC > File > Open Network  
 Enter the following URL:
 ```bash
-http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mp4
+http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mkv
 ```
 
 <img src="imgs/img_3.png" alt="VLC Step 1" style="width:70%;" />
@@ -160,7 +160,7 @@ Visit [Jessibuca Player](http://jessibuca.monibuca.com/player.html)
 
 Enter the stream URL and click play:
 ```bash
-http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mp4
+http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mkv
 ```
 
 <img src="imgs/img_5.png" alt="Jessibuca Playback" style="width:70%;" />
@@ -171,12 +171,12 @@ http://192.168.1.166:8005/?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mp4
 
 Stream URL:
 ```
-rtsp://192.168.1.166/2k-H264-G711A.mp4
+rtsp://192.168.1.166/2k-H264-G711A.mkv
 ```
 
 Snapshot URL:
 ```
-http://192.168.1.166:8006/snapshot?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mp4
+http://192.168.1.166:8006/snapshot?cam_url=rtsp://192.168.1.166/2k-H264-G711A.mkv
 ```
 
 Preview:
@@ -187,12 +187,12 @@ Preview:
 
 Stream URL:
 ```
-rtmp://192.168.1.166/myapp/2k-H264-G711A.mp4
+rtmp://192.168.1.166/myapp/2k-H264-G711A.mkv
 ```
 
 Snapshot URL:
 ```
-http://192.168.1.166:8006/snapshot?cam_url=rtmp://192.168.1.166/myapp/2k-H264-G711A.mp4
+http://192.168.1.166:8006/snapshot?cam_url=rtmp://192.168.1.166/myapp/2k-H264-G711A.mkv
 ```
 
 Preview:
