@@ -262,7 +262,7 @@ def handle(sock, address):
             if not cam_type:
                 if cam_url.startswith("rtsp"):
                     cam_type = "rtsp-tcp"
-                if cam_type.startswith("rtmp"):
+                if cam_url.startswith("rtmp"):
                     cam_type = "rtmp"
             assert cam_type in ("rtsp-tcp", 'rtsp-udp', "rtmp"), Exception("cam_type不合法")
             allow_h265 = query_dict.get('allow_h265', 'true').strip()
