@@ -249,9 +249,9 @@ def av_function(cam_url, redis_url,
                 # 主进程是否存活判断
                 if counter % 10 == 0:
                     try:
-                        assert main_p.name() == 'rtsp_flv'
+                        assert main_p.name() == 'cam_httpflv'
                     except Exception:
-                        print_to_logger(main_p, main_p.pid, main_p.name(), "!=rtsp_flv")
+                        print_to_logger(main_p, main_p.pid, main_p.name(), "!=cam_httpflv")
                         sys.exit(0)
 
 
@@ -270,8 +270,8 @@ def av_function(cam_url, redis_url,
 
             #if counter % 10 == 0:
             try:
-                assert main_p.name() == 'rtsp_flv'
+                assert main_p.name() == 'cam_httpflv'
             except Exception:
-                print_to_logger(main_p, main_p.pid, main_p.name(), "!=rtsp_flv")
+                print_to_logger(main_p, main_p.pid, main_p.name(), "!=cam_httpflv")
                 sys.exit(0)
 

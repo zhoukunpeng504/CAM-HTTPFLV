@@ -449,7 +449,7 @@ def snapshot():
 if __name__ == '__main__':
     httpflv_bind_ip = '0.0.0.0'
     httpflv_port = 8005
-    setproctitle.setproctitle('rtsp_flv')
+    setproctitle.setproctitle('cam_httpflv')
     redis_url = os.environ.get("REDIS_URL", 'redis://127.0.0.1:6379/8').strip()
     try:
         assert redis.Redis.from_url(redis_url).ping() == True
