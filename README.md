@@ -111,20 +111,6 @@ http://192.168.1.166:8006/snapshot?cam_url=XX
 
 Send a GET request to retrieve the current snapshot in JPG format.
 
-## Start Sample RTSP/RTMP Streams
-
-We provide test servers for both RTSP and RTMP formats. Ensure the following ports are available:
-- TCP 554
-- UDP 554
-- TCP 1935
-
-Launch test streams:
-only  for x86  linux servers with the Docker CLI. 
-```bash
-docker run -itd --net=host --name=rtsp-rtmp-videosources --restart=always zhoukunpeng505/cam-httpflv-videosource:2026-09-02-6041972 
-```
-
-See the full list of test video stream URLs in the original documentation.
 
 ## Live Streaming via HTTP-FLV
 
