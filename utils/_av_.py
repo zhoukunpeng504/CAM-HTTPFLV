@@ -159,7 +159,7 @@ def av_function(cam_url, redis_url,
                 else:
                     #_out_stream_audio = output.add_stream(codec_name=audio_code_name,)
                     _out_stream_audio = output.add_stream(codec_name='aac',
-                                                          rate=11000,  # 默认11kHZ
+                                                          rate=audio.codec_context.rate, #11000,  # 默认11kHZ
                                                           # 8000, #audio.codec_context.rate,
                                                           layout=audio.codec_context.layout.name,
                                                           )  # layout和输入保持一致
