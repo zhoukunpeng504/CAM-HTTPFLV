@@ -227,7 +227,7 @@ def av_function(cam_url, redis_url,
                 elif 'audio' in str(_p.stream.codec_context) and _out_stream_audio:
                     # 音频帧
                     print("[AUDIO]", _p, _p.time_base, _p.dts, _p.pts)
-                    if audio_code_name == 'aac' and str(audio.codec_context.rate) == '8000':
+                    if audio_code_name == 'aac' : #and str(audio.codec_context.rate) == '8000':
                         try:
                             # print(_p, _p.time_base, _p.dts, _p.pts)
                             _p.stream = _out_stream_audio
