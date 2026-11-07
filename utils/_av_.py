@@ -151,11 +151,18 @@ def av_function(cam_url, redis_url,
                 print("audio time base", audio.time_base,audio.codec_context, audio.codec_context.rate,
                       audio.codec_context.layout.name)
                 # 源视频中含有音频流
-                _out_stream_audio = output.add_stream(codec_name='aac',
-                                                      rate=audio.codec_context.rate,#8000, #audio.codec_context.rate,
-                                                      layout=audio.codec_context.layout.name,
-                                                      )  # layout和输入保持一致
-
+                if audio_code_name =='aac':
+                    _out_stream_audio = output.add_stream(codec_name='aac',
+                                                          rate=audio.codec_context.rate,#8000, #audio.codec_context.rate,
+                                                          layout=audio.codec_context.layout.name,
+                                                          )  # layout和输入保持一致
+                else:
+                    #_out_stream_audio = output.add_stream(codec_name=audio_code_name,)
+                    _out_stream_audio = output.add_stream(codec_name='aac',
+                                                          rate=11000,  # 默认11kHZ
+                                                          # 8000, #audio.codec_context.rate,
+                                                          layout=audio.codec_context.layout.name,
+                                                          )  # layout和输入保持一致
                 # _out_stream_audio.time_base = f"1/{audio.codec_context.rate}"
                 # '1/8000' #str(audio.time_base) #'1/8000'
                 # f'1/{str(audio.time_base).split("/")[-1]}'
