@@ -7,6 +7,8 @@ import gevent
 import re
 import base64
 import hashlib,struct, time
+import hmac
+from urllib.parse import parse_qsl
 import psutil
 from utils import _av_, process_task
 from utils.request_parser import parse_stream_url
@@ -61,6 +63,31 @@ def print_to_logger(*args):
         print(f"[{now}: INFO]:{msg}")
     except:
         pass
+
+
+def is_request_authorized(params):
+    """Validate the decoded cam_url and integer timestamp before any URL rewrite."""
+    private_key = os.environ.get('PRIVATE_KEY', '')
+    if not private_key:
+        return True
+
+    cam_url = params.get('cam_url', '')
+    signature = params.get('md5', '')
+    if not cam_url or not re.fullmatch(r'[0-9a-f]{32}', signature):
+        return False
+    try:
+        timestamp = int(params.get('time', ''))
+    except (TypeError, ValueError):
+        return False
+
+    now = time.time()
+    # Comparing bounds also safely rejects arbitrarily large integer timestamps.
+    if not now - 300 < timestamp < now + 300:
+        return False
+    expected = hashlib.md5(
+        (cam_url + str(timestamp) + private_key).encode('utf-8')
+    ).hexdigest()
+    return hmac.compare_digest(signature, expected)
 
 
 class Header(object):
@@ -249,6 +276,15 @@ def handle(sock, address):
         if _a == 'GET':
             path = _b
             print_to_logger("path", path)
+            params = dict(parse_qsl(path.partition('?')[2]))
+            if not is_request_authorized(params):
+                sock.sendall(
+                    b"HTTP/1.1 403 Forbidden\r\n"
+                    b"Content-Type: text/plain; charset=utf-8\r\n"
+                    b"Content-Length: 3\r\n"
+                    b"Connection: close\r\n\r\n403"
+                )
+                return
             cam_url, cam_type, allow_h265 = parse_stream_url(path)
 
             # assert cam_url.startswith("rtsp://")
@@ -358,6 +394,8 @@ def handle(sock, address):
 @app.route("/snapshot", methods=['GET', 'POST'])
 def snapshot():
     # 获取摄像头当前图像
+    if not is_request_authorized(request.args):
+        return Response('403', mimetype='text/plain', status=403)
     cam_url = request.args.get("cam_url", '')
     if not cam_url:
         return Response(b'', mimetype="image/jpeg",

@@ -101,6 +101,47 @@ URL 参数解析位于 `utils/request_parser.py`，由 `server.py` 的 `handle()
 去除首尾空白后仅 `true`、`1`、`True` 表示启用，其余值均为 false。
 摄像头 URL 含 `&`、`+` 等字符时，应先用 `urllib.parse.urlencode` 编码为 `cam_url` 参数。
 
+### 通过 PRIVATE_KEY 控制访问
+
+HTTP-FLV 和 `/snapshot` 共用环境变量 `PRIVATE_KEY`。未设置或为空字符串时禁用鉴权；
+非空时，每个请求的 URL 查询参数必须包含 `cam_url`、`time` 和 `md5`。
+`time` 为整数秒级时间戳，与服务器当前时间的差的绝对值必须严格小于 300 秒，
+过去和未来的时间戳都受此限制，恰好相差 300 秒时拒绝访问。
+
+签名计算方式：
+
+```python
+md5 = hashlib.md5((cam_url + str(int(time)) + PRIVATE_KEY).encode('utf-8')).hexdigest()
+```
+
+`md5` 是 32 位小写十六进制字符串。`cam_url` 使用 URL 解码后的原始参数值，
+包括可能存在的 `.flv` 后缀；签名在服务端去掉后缀前验证。
+参数缺失、时间戳不合法或超出时间窗口、签名错误时，均返回 HTTP 403，响应正文为 `403`。
+
+启动示例：
+
+```bash
+PRIVATE_KEY='your-secret-key' python3 server.py
+```
+
+使用 Docker 时，通过 `-e PRIVATE_KEY='your-secret-key'` 传入密钥。
+可信客户端可以按如下方式生成两个服务的访问地址（密钥应保留在可信端）：
+
+```python
+import hashlib
+import os
+import time
+from urllib.parse import urlencode
+
+cam_url = 'rtsp://camera/live?channel=1&token=a+b'
+timestamp = str(int(time.time()))
+private_key = os.environ['PRIVATE_KEY']
+signature = hashlib.md5((cam_url + timestamp + private_key).encode('utf-8')).hexdigest()
+query = urlencode({'cam_url': cam_url, 'time': timestamp, 'md5': signature})
+print('HTTP-FLV:', 'http://127.0.0.1:8005/?' + query)
+print('Snapshot:', 'http://127.0.0.1:8006/snapshot?' + query)
+```
+
 ### 功能1：视频源转HTTPFLV直播流
 URL:http://192.168.1.166:8005/cam_url=XX
 - XX: 视频源URL。如:rtsp://192.168.1.166/720p-H264-AAC.mkv、rtmp://192.168.1.166/myapp/720p-H264-AAC.mkv
