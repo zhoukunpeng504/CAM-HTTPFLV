@@ -24,6 +24,7 @@ CAM-HTTPFLV 支持两大核心功能：
   - [如何安装](#如何安装)
     - [使用docker安装(推荐)](#使用docker安装推荐)
     - [使用源码安装](#使用源码安装)
+  - [安全认证](#安全认证)
   - [视频源转HTTPFLV直播流](#视频源转httpflv直播流)
   - [视频源实时快照](#视频源实时快照)
     - [RTSP实时快照](#rtsp实时快照测试)
@@ -90,57 +91,26 @@ python3 -m unittest discover -s tests -v
 ```
 
 `.github/workflows/unit-tests.yml` 会在每次 push、pull request 时自动运行，
-也可以在 GitHub 的 Actions 页面手动触发，测试 Python 3.9、3.10、3.11、3.12。
+也可以在 GitHub 的 Actions 页面手动触发，测试 Python 3.10、3.11、3.12。
 
 URL 参数解析位于 `utils/request_parser.py`，由 `server.py` 的 `handle()` 调用。
 测试覆盖 URL 编码、嵌套查询参数、`.flv` 后缀、`cam_type` 默认值与校验、
 `allow_h265`、重复及空参数，以及错误请求返回 404 和视频任务参数传递。
 处理器测试使用 mock 替代视频和网络依赖，不验证实际视频转码或 Redis 通信。
 
+`tests/test_auth.py` 单独覆盖 `PRIVATE_KEY` 开关、必填参数、整数时间戳、
+正负 300 秒边界、MD5 格式及签名、URL 编码和两个入口的 403 状态与正文。
+HTTP-FLV 和快照共用同一组错误参数用例，检查拒绝访问后不会启动视频任务或快照线程。
+Actions 先运行完整测试，再用 Python 优化模式单独运行鉴权测试，
+确认关闭 Python 的 `assert` 后鉴权仍然有效。可在本地运行相同命令：
+
+```bash
+python3 -O -m unittest discover -s tests -p 'test_auth.py' -v
+```
+
 参数沿用现有规则：重复参数采用最后一个非空值；`allow_h265` 缺省或空值为 true，
 去除首尾空白后仅 `true`、`1`、`True` 表示启用，其余值均为 false。
 摄像头 URL 含 `&`、`+` 等字符时，应先用 `urllib.parse.urlencode` 编码为 `cam_url` 参数。
-
-### 通过 PRIVATE_KEY 控制访问
-
-HTTP-FLV 和 `/snapshot` 共用环境变量 `PRIVATE_KEY`。未设置或为空字符串时禁用鉴权；
-非空时，每个请求的 URL 查询参数必须包含 `cam_url`、`time` 和 `md5`。
-`time` 为整数秒级时间戳，与服务器当前时间的差的绝对值必须严格小于 300 秒，
-过去和未来的时间戳都受此限制，恰好相差 300 秒时拒绝访问。
-
-签名计算方式：
-
-```python
-md5 = hashlib.md5((cam_url + str(int(time)) + PRIVATE_KEY).encode('utf-8')).hexdigest()
-```
-
-`md5` 是 32 位小写十六进制字符串。`cam_url` 使用 URL 解码后的原始参数值，
-包括可能存在的 `.flv` 后缀；签名在服务端去掉后缀前验证。
-参数缺失、时间戳不合法或超出时间窗口、签名错误时，均返回 HTTP 403，响应正文为 `403`。
-
-启动示例：
-
-```bash
-PRIVATE_KEY='your-secret-key' python3 server.py
-```
-
-使用 Docker 时，通过 `-e PRIVATE_KEY='your-secret-key'` 传入密钥。
-可信客户端可以按如下方式生成两个服务的访问地址（密钥应保留在可信端）：
-
-```python
-import hashlib
-import os
-import time
-from urllib.parse import urlencode
-
-cam_url = 'rtsp://camera/live?channel=1&token=a+b'
-timestamp = str(int(time.time()))
-private_key = os.environ['PRIVATE_KEY']
-signature = hashlib.md5((cam_url + timestamp + private_key).encode('utf-8')).hexdigest()
-query = urlencode({'cam_url': cam_url, 'time': timestamp, 'md5': signature})
-print('HTTP-FLV:', 'http://127.0.0.1:8005/?' + query)
-print('Snapshot:', 'http://127.0.0.1:8006/snapshot?' + query)
-```
 
 ### 功能1：视频源转HTTPFLV直播流
 URL:http://192.168.1.166:8005/cam_url=XX
@@ -158,7 +128,68 @@ URL:http://192.168.1.166:8006/snapshot?cam_url=XX
 如何使用？
 通过GET请求向该地址发起请求即可得到视频源当前的快照图片，格式为jpg。
 
-  
+
+## 安全认证
+
+**本仓库默认不启用认证。** 当环境变量 `PRIVATE_KEY` 未设置或为空字符串时，
+任何能够访问服务的人都可以请求 HTTP-FLV 视频流和快照，无需提供签名。
+本文其他章节中不带签名的访问地址均以这一默认状态为前提。
+
+认证是可选功能，可以独立于其他配置开启。将 `PRIVATE_KEY` 设置为非空字符串，
+即可同时为 **8005 端口的 HTTP-FLV 服务和 8006 端口的快照服务**启用认证，
+两个服务使用同一个密钥。
+
+源码部署时，按如下方式启动：
+
+```bash
+export PRIVATE_KEY='replace-with-your-secret'
+python3 server.py
+```
+
+使用 Docker 时，先构建包含本功能的镜像，再向容器传入密钥：
+
+```bash
+docker build -t cam-httpflv:local .
+docker run -d --name cam-httpflv -p 8005:8005 -p 8006:8006 \
+  -e PRIVATE_KEY='replace-with-your-secret' cam-httpflv:local
+```
+
+如需关闭认证，在启动服务时移除 `PRIVATE_KEY` 或将其设为空字符串即可；
+Docker 部署需使用更新后的环境变量重新创建容器。
+
+启用认证后，每次视频流或快照请求的 URL 查询参数必须包含：
+
+- `cam_url`：原始摄像头 URL。签名使用 URL 解码后的值，包括可能存在的 `.flv` 后缀，
+  先计算签名，再对其进行 URL 编码以构造请求地址。
+- `time`：整数秒级 Unix 时间戳。它与服务器当前时间的差的绝对值必须**严格小于 300 秒**，
+  过去和未来的时间戳均受此限制，恰好相差 300 秒时拒绝访问。签名端与服务器应保持时钟同步。
+- `md5`：将 `cam_url + str(int(time)) + PRIVATE_KEY` 按顺序拼接，不添加分隔符，
+  使用 UTF-8 编码后计算 MD5，取 32 位小写十六进制字符串。
+
+在可信后端中配置与服务端相同的 `PRIVATE_KEY` 环境变量，然后生成带签名的访问地址。
+密钥应保留在可信后端，仅将生成的 URL 交给播放器或快照客户端。例如：
+
+```python
+import hashlib
+import os
+import time
+from urllib.parse import urlencode
+
+cam_url = 'rtsp://camera/live?channel=1&token=a+b'
+timestamp = str(int(time.time()))
+private_key = os.environ['PRIVATE_KEY']
+signature = hashlib.md5((cam_url + timestamp + private_key).encode('utf-8')).hexdigest()
+query = urlencode({'cam_url': cam_url, 'time': timestamp, 'md5': signature})
+print('HTTP-FLV:', 'http://192.168.1.166:8005/?' + query)
+print('Snapshot:', 'http://192.168.1.166:8006/snapshot?' + query)
+```
+
+请替换示例中的摄像头 URL 和服务器地址。`urlencode` 可以保留摄像头 URL 内部的 `&`、`+`
+等字符。将生成的 HTTP-FLV 地址填入支持的播放器即可播放；向生成的快照地址发送 GET 请求
+即可获取 JPEG 图片。新请求或断线重连时，如果旧时间戳已超出允许范围，需要重新生成签名地址。
+认证参数缺失或格式不合法、时间戳超出允许范围、签名不匹配时，均返回 HTTP **403**，
+响应正文为 `403`。
+
 ## 视频源转HTTPFLV直播流
 如下以rtsp://192.168.1.166/2k-H264-G711A.mkv为视频源。
 在实际应用中选取rtsp、rtmp协议的视频源均可。

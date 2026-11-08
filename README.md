@@ -25,6 +25,7 @@ This documentation briefly introduces supported video formats, core functionalit
   - [Installation](#installation)
     - [Install via Docker (Recommended)](#install-via-docker-recommended)
     - [Install from Source](#install-from-source)
+  - [Optional Authentication](#optional-authentication)
   - [Live Streaming via HTTP-FLV](#live-streaming-via-http-flv)
   - [Snapshot Capture](#snapshot-capture)
     - [RTSP Snapshot Example](#rtsp-snapshot-example)
@@ -110,6 +111,73 @@ http://192.168.1.166:8006/snapshot?cam_url=XX
 
 Send a GET request to retrieve the current snapshot in JPG format.
 
+
+## Optional Authentication
+
+**Authentication is disabled by default.** When `PRIVATE_KEY` is unset or an empty
+string, anyone who can reach the service can request HTTP-FLV streams and snapshots
+without a signature. The unsigned URLs elsewhere in this README assume this default.
+
+Authentication is optional and can be enabled independently of the other settings.
+Set a nonempty `PRIVATE_KEY` to enable it for **both** the HTTP-FLV service on port
+8005 and the snapshot service on port 8006; both use the same key.
+
+For a source deployment, start the service with:
+
+```bash
+export PRIVATE_KEY='replace-with-your-secret'
+python3 server.py
+```
+
+For Docker, build an image containing this feature and pass the key to the container:
+
+```bash
+docker build -t cam-httpflv:local .
+docker run -d --name cam-httpflv -p 8005:8005 -p 8006:8006 \
+  -e PRIVATE_KEY='replace-with-your-secret' cam-httpflv:local
+```
+
+To disable authentication again, start the service with `PRIVATE_KEY` unset or empty
+(recreate a Docker container with the updated environment).
+
+When authentication is enabled, every stream or snapshot request must include these
+URL query parameters:
+
+- `cam_url`: the original camera URL. Sign its decoded value, including any `.flv`
+  suffix, before URL-encoding it for the HTTP request.
+- `time`: a Unix timestamp in integer seconds. Its absolute difference from the
+  server's current time must be **strictly less than 300 seconds**. Both past and
+  future timestamps are checked; exactly 300 seconds is rejected. Keep the signing
+  machine and server clocks synchronized.
+- `md5`: the 32-character lowercase hexadecimal MD5 of
+  `cam_url + str(int(time)) + PRIVATE_KEY`, encoded as UTF-8, with no separators.
+
+Generate signed URLs on a trusted backend with the same `PRIVATE_KEY` environment
+variable as the service. Keep the key on the trusted backend; send only the resulting
+URL to the player or snapshot client. For example:
+
+```python
+import hashlib
+import os
+import time
+from urllib.parse import urlencode
+
+cam_url = 'rtsp://camera/live?channel=1&token=a+b'
+timestamp = str(int(time.time()))
+private_key = os.environ['PRIVATE_KEY']
+signature = hashlib.md5((cam_url + timestamp + private_key).encode('utf-8')).hexdigest()
+query = urlencode({'cam_url': cam_url, 'time': timestamp, 'md5': signature})
+print('HTTP-FLV:', 'http://192.168.1.166:8005/?' + query)
+print('Snapshot:', 'http://192.168.1.166:8006/snapshot?' + query)
+```
+
+Replace the camera URL and server address with your own values. `urlencode` preserves
+characters such as `&` and `+` inside the camera URL. Open the generated HTTP-FLV URL
+in a supported player, or send a GET request to the generated snapshot URL to receive
+a JPEG. Generate a fresh signed URL for each new request or reconnect when the old
+timestamp is outside the allowed window. A missing or invalid authentication parameter,
+an out-of-window timestamp, or a mismatched signature returns HTTP **403** with the
+response body `403`.
 
 ## Live Streaming via HTTP-FLV
 

@@ -29,5 +29,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       # Tests use the standard library; video/network dependencies are mocked.
-      - name: Run unit tests
+      - name: Run URL parsing, handler and authentication tests
         run: python -m unittest discover -s tests -v
+
+      # Access checks must also remain active when Python assertions are disabled.
+      - name: Run authentication tests with Python optimization enabled
+        run: python -O -m unittest discover -s tests -p 'test_auth.py' -v
