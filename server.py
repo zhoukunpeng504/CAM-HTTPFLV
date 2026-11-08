@@ -5,11 +5,11 @@ import random
 from gevent.monkey import patch_all; patch_all()
 import gevent
 import re
-from urllib import parse
 import base64
 import hashlib,struct, time
 import psutil
 from utils import _av_, process_task
+from utils.request_parser import parse_stream_url
 import os
 import setproctitle
 import redis
@@ -249,27 +249,7 @@ def handle(sock, address):
         if _a == 'GET':
             path = _b
             print_to_logger("path", path)
-            real_path, query_info = path.split("?", 1) #[1]
-            assert real_path in ("/",), Exception("路径不合法！")
-            query_dict = dict(parse.parse_qsl(query_info))
-            assert "cam_url" in query_dict and query_dict['cam_url'],\
-                Exception('无法找到cam_url参数')
-            cam_url = query_dict['cam_url']#.strip(".flv")
-            if cam_url.endswith(".flv"):
-                cam_url = cam_url[:-4]
-            #assert 'cam_type' in query_dict and query_dict['cam_url'],  Exception('无法找到cam_type参数')
-            cam_type = query_dict.get('cam_type', '')
-            if not cam_type:
-                if cam_url.startswith("rtsp"):
-                    cam_type = "rtsp-tcp"
-                if cam_url.startswith("rtmp"):
-                    cam_type = "rtmp"
-            assert cam_type in ("rtsp-tcp", 'rtsp-udp', "rtmp"), Exception("cam_type不合法")
-            allow_h265 = query_dict.get('allow_h265', 'true').strip()
-            if allow_h265 in ('true', '1', 'True'):
-                allow_h265 = True
-            else:
-                allow_h265 = False
+            cam_url, cam_type, allow_h265 = parse_stream_url(path)
 
             # assert cam_url.startswith("rtsp://")
             _ = [[j.strip() for j in i.split(":", 1)] for i in request_data[1:]]

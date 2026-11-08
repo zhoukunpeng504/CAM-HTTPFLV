@@ -82,6 +82,26 @@ cd  CAM-HTTPFLV
 pip3 install -r requirements.txt
 python3 server.py
 ```
+### 单元测试与 GitHub Actions
+
+在项目根目录运行（仅使用 Python 标准库，无需安装视频库或启动 Redis）：
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+`.github/workflows/unit-tests.yml` 会在每次 push、pull request 时自动运行，
+也可以在 GitHub 的 Actions 页面手动触发，测试 Python 3.9、3.10、3.11、3.12。
+
+URL 参数解析位于 `utils/request_parser.py`，由 `server.py` 的 `handle()` 调用。
+测试覆盖 URL 编码、嵌套查询参数、`.flv` 后缀、`cam_type` 默认值与校验、
+`allow_h265`、重复及空参数，以及错误请求返回 404 和视频任务参数传递。
+处理器测试使用 mock 替代视频和网络依赖，不验证实际视频转码或 Redis 通信。
+
+参数沿用现有规则：重复参数采用最后一个非空值；`allow_h265` 缺省或空值为 true，
+去除首尾空白后仅 `true`、`1`、`True` 表示启用，其余值均为 false。
+摄像头 URL 含 `&`、`+` 等字符时，应先用 `urllib.parse.urlencode` 编码为 `cam_url` 参数。
+
 ### 功能1：视频源转HTTPFLV直播流
 URL:http://192.168.1.166:8005/cam_url=XX
 - XX: 视频源URL。如:rtsp://192.168.1.166/720p-H264-AAC.mkv、rtmp://192.168.1.166/myapp/720p-H264-AAC.mkv
