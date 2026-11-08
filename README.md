@@ -25,7 +25,6 @@ This documentation briefly introduces supported video formats, core functionalit
   - [Installation](#installation)
     - [Install via Docker (Recommended)](#install-via-docker-recommended)
     - [Install from Source](#install-from-source)
-  - [Start Sample RTSP/RTMP Streams](#start-sample-rtsp-rtmp-streams)
   - [Live Streaming via HTTP-FLV](#live-streaming-via-http-flv)
   - [Snapshot Capture](#snapshot-capture)
     - [RTSP Snapshot Example](#rtsp-snapshot-example)
