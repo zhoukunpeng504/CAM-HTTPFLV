@@ -112,6 +112,36 @@ http://192.168.1.166:8006/snapshot?cam_url=XX
 Send a GET request to retrieve the current snapshot in JPG format.
 
 
+### URL-encoding Camera URLs
+
+When `cam_url` contains special characters such as `&`, `+`, `#`, `%`, spaces or
+non-ASCII text, **URL-encode the parameter value before including it in the request**.
+For example, an unencoded `&` is interpreted as a separator between HTTP query
+parameters, and an unencoded `+` is decoded as a space, changing the camera URL.
+This applies to both HTTP-FLV and snapshots, whether authentication is enabled or not.
+
+Use `urllib.parse.urlencode` to build the query from the original camera URL:
+
+```python
+from urllib.parse import urlencode
+
+cam_url = 'rtsp://camera/live?channel=1&token=a+b'
+query = urlencode({'cam_url': cam_url})
+print('http://192.168.1.166:8005/?' + query)
+print('http://192.168.1.166:8006/snapshot?' + query)
+```
+
+Output (with authentication disabled):
+
+```text
+http://192.168.1.166:8005/?cam_url=rtsp%3A%2F%2Fcamera%2Flive%3Fchannel%3D1%26token%3Da%2Bb
+http://192.168.1.166:8006/snapshot?cam_url=rtsp%3A%2F%2Fcamera%2Flive%3Fchannel%3D1%26token%3Da%2Bb
+```
+
+When [authentication is enabled](#optional-authentication), first calculate the MD5
+using the original, unencoded `cam_url`, then pass `cam_url`, `time` and `md5` together
+to `urlencode`, as shown in the authentication example below.
+
 ## Optional Authentication
 
 **Authentication is disabled by default.** When `PRIVATE_KEY` is unset or an empty

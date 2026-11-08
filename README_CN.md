@@ -113,12 +113,12 @@ python3 -O -m unittest discover -s tests -p 'test_auth.py' -v
 摄像头 URL 含 `&`、`+` 等字符时，应先用 `urllib.parse.urlencode` 编码为 `cam_url` 参数。
 
 ### 功能1：视频源转HTTPFLV直播流
-URL:http://192.168.1.166:8005/cam_url=XX
+URL:http://192.168.1.166:8005/?cam_url=XX
 - XX: 视频源URL。如:rtsp://192.168.1.166/720p-H264-AAC.mkv、rtmp://192.168.1.166/myapp/720p-H264-AAC.mkv
 
 如何使用？
 1. 根据使用场景，拼接url，如：视频源地址为rtmp://192.168.1.166/myapp/720p-H264-AAC.mkv，则转换后的HTTPFLV视频流地址为：
-http://192.168.1.166:8005/cam_url=rtmp://192.168.1.166/myapp/720p-H264-AAC.mkv
+http://192.168.1.166:8005/?cam_url=rtmp://192.168.1.166/myapp/720p-H264-AAC.mkv
 2. 将地址填入播放器中，开始播放。目前支持的播放器：VLC、ffplay(ffmpeg)、jessibuca、flv.js
 
 
@@ -128,6 +128,35 @@ URL:http://192.168.1.166:8006/snapshot?cam_url=XX
 如何使用？
 通过GET请求向该地址发起请求即可得到视频源当前的快照图片，格式为jpg。
 
+
+### 摄像头 URL 的特殊字符编码
+
+当 `cam_url` 中含有 `&`、`+`、`#`、`%`、空格或中文等特殊字符时，
+**必须先对参数值进行 URL 编码，再拼接到请求地址中**。
+例如，直接拼接的 `&` 会被当作外层查询参数的分隔符，`+` 会被解码为空格，
+导致服务端收到的摄像头 URL 与原始地址不一致。
+此规则同时适用于 HTTP-FLV 和快照服务，无论是否开启认证。
+
+可以使用 `urllib.parse.urlencode`，直接将原始摄像头 URL 转换为查询参数。例如：
+
+```python
+from urllib.parse import urlencode
+
+cam_url = 'rtsp://camera/live?channel=1&token=a+b'
+query = urlencode({'cam_url': cam_url})
+print('http://192.168.1.166:8005/?' + query)
+print('http://192.168.1.166:8006/snapshot?' + query)
+```
+
+输出如下（适用于未开启认证时）：
+
+```text
+http://192.168.1.166:8005/?cam_url=rtsp%3A%2F%2Fcamera%2Flive%3Fchannel%3D1%26token%3Da%2Bb
+http://192.168.1.166:8006/snapshot?cam_url=rtsp%3A%2F%2Fcamera%2Flive%3Fchannel%3D1%26token%3Da%2Bb
+```
+
+[开启认证](#安全认证)时，应先使用未经本次 URL 编码的原始 `cam_url` 计算 MD5，
+再将 `cam_url`、`time`、`md5` 一起交给 `urlencode` 构造查询参数，具体见下文的认证示例。
 
 ## 安全认证
 
