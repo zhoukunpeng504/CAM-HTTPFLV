@@ -278,6 +278,7 @@ def handle(sock, address):
             print_to_logger("path", path)
             params = dict(parse_qsl(path.partition('?')[2]))
             if not is_request_authorized(params):
+                print_to_logger("authorize failed!!", params)
                 sock.sendall(
                     b"HTTP/1.1 403 Forbidden\r\n"
                     b"Content-Type: text/plain; charset=utf-8\r\n"
@@ -395,6 +396,7 @@ def handle(sock, address):
 def snapshot():
     # 获取摄像头当前图像
     if not is_request_authorized(request.args):
+        print_to_logger("authorize failed!!", request.args)
         return Response('403', mimetype='text/plain', status=403)
     cam_url = request.args.get("cam_url", '')
     if not cam_url:
@@ -482,4 +484,9 @@ if __name__ == '__main__':
     http_server = WSGIServer(('0.0.0.0', 8006), app)
     http_server.start()
     print_to_logger("Start Snapshot Server", "http://0.0.0.0:8006/")
+    _private_key = os.environ.get('PRIVATE_KEY', '').strip().strip("'").strip('"')
+    if _private_key:
+        print_to_logger("AUTH is Enabled! PRIVATE_KEY is ", _private_key)
+    else:
+        print_to_logger("AUTH is Disabled! ")
     server.serve_forever()

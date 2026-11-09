@@ -14,6 +14,7 @@ RUN cd /data/code && pip3 install -r requirements.txt
 ENV REDIS_URL redis://127.0.0.1:6379/8
 #
 ENV PYTHONUNBUFFERED 1
+ENV PRIVATE_KEY ''
 # flv port
 EXPOSE 8005
 # snapshot port
